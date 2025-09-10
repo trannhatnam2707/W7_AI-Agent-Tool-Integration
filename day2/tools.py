@@ -7,9 +7,9 @@ def get_population_by_year(country: str, year: int):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"} 
     
     print(f"      🌐 Đang truy cập: {url}")
-    
     try:
         response = requests.get(url, headers=headers, timeout=10)
+        response.encoding = "utf-8"
         if response.status_code != 200:
             raise Exception(f"Failed to fetch data for {country}. Status code: {response.status_code}")
     except requests.RequestException as e:

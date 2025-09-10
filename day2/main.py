@@ -30,14 +30,14 @@ def extract_country_from_query(user_query):
         'ấn độ': 'india'
     }
     
-    for key, value in country_mapping.items():
-        if key in query_lower:
-            print(f"   🎯 Tìm thấy '{key}' -> '{value}'")
-            return value
+    # for key, value in country_mapping.items():
+    #     if key in query_lower:
+    #         print(f"   🎯 Tìm thấy '{key}' -> '{value}'")
+    #         return value
     
-    # Mặc định là vietnam nếu không tìm thấy
-    print(f"   ⚠️  Không tìm thấy quốc gia cụ thể, dùng mặc định: vietnam")
-    return 'vietnam'
+    # # Mặc định là vietnam nếu không tìm thấy
+    # print(f"   ⚠️  Không tìm thấy quốc gia cụ thể, dùng mặc định: vietnam")
+    # return 'vietnam'
 
 def main():
     state = create_state()
