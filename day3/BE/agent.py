@@ -21,7 +21,7 @@ def ask_llm_for_plan(user_query: str):
     prompt = f"""
 Bạn là một AI Planner. 
 Phân tích câu hỏi người dùng và trả về một kế hoạch JSON để thực hiện.
-
+    
 YÊU CẦU:
 - Chỉ trả về JSON hợp lệ, không thêm giải thích.
 - JSON là một array gồm các bước.
@@ -58,8 +58,10 @@ def execute_plan(plan_json, state):
         return state
 
     for i, step in enumerate(steps, 1):
+        step["step"] = i   # gán số bước vào step để state theo dõi
         action = step["action"]
         print(f"\n📍 Bước {i}/{len(steps)}: {action}")
+
 
         # === OBSERVE ===
         log_observation(state, f"Quan sát step {i}: {step}")
@@ -83,7 +85,7 @@ def execute_plan(plan_json, state):
                     state["population_end"] = population
 
                 log_action(state, f"Lấy dân số {year}: {population:,}")
-                complete_step(state, i, f"Dân số {year}: {population:,}")
+                complete_step(state, i, f"Dân số {year}: {population:,}",action)
 
             elif action == "calculate_growth":
                 start_pop = state.get("population_start")
@@ -105,7 +107,7 @@ def execute_plan(plan_json, state):
                 print(f"   ✅ Growth rate: {growth_rate*100:.3f}%/năm")
 
                 log_action(state, f"Tốc độ tăng trưởng: {growth_rate*100:.3f}%/năm")
-                complete_step(state, i, f"Tốc độ tăng trưởng: {growth_rate*100:.3f}%/năm")
+                complete_step(state, i, f"Tốc độ tăng trưởng: {growth_rate*100:.3f}%/năm",action)
 
             elif action == "predict_population":
                 current_pop = state.get("population_end")
@@ -128,12 +130,12 @@ def execute_plan(plan_json, state):
                 print(f"   ✅ Dân số {future_year}: {predicted:,}")
 
                 log_action(state, f"Dự đoán dân số năm {future_year}: {predicted:,}")
-                complete_step(state, i, f"Dân số năm {future_year}: {predicted:,}")
+                complete_step(state, i, f"Dân số năm {future_year}: {predicted:,}", action)
 
             else:
                 print(f"   ⚠️ Action không hỗ trợ: {action}")
                 log_action(state, f"Action không hỗ trợ: {action}")
-                complete_step(state, i, "failed")
+                complete_step(state, i, "failed", action)
 
         except Exception as e:
             print(f"   ❌ Lỗi tại bước {i}: {e}")

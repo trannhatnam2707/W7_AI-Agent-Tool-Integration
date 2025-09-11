@@ -45,18 +45,16 @@ def log_action(state, action):
     state["actions"].append(action)
     print("Action:", action)
 
-def complete_step(state:dict, step: int, result: str):
+def complete_step(state: dict, step: int, result: str, action: str = None):
     """Đánh dấu 1 bước đã hoàn thành và log kết quả """
-    found = False
-    for p in state["plan"]:
-        if p["step"] == step:
-            p["result"] = result
-            state["history"].append({"step": step, "result": result})
-            state["current_step"] += 1
-            found = True
-            break
-    
-    if not found:
-        state["history"].append({"step": step, "action": "unknown step", "result": result})
-        state["current_step"] += 1
+    record = {"step": step, "result": result}
+    if action:
+        record["action"] = action
+    else:
+        record["action"] = "unknown step"
+
+    state["history"].append(record)
+    state["current_step"] += 1
+
+
         
