@@ -1,36 +1,74 @@
 import { useState } from "react";
-import axios from "axios";
-import QueryForm from "./components/QueryForm";
-import ResultBox from "./components/ResultBox";
-import LogBox from "./components/LogBox";
+import Header from "./components/Header";
+import StatsGrid from "./components/StartGrid";
+import PopulationChart from "./components/Populationchat";
+import Controls from "./components/Controls";
+import PredictionResult from "./components/PredictionResult";
 
 function App() {
-  const [result, setResult] = useState(null);
-  const [logs, setLogs] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleAsk = async (query) => {
+  const handlePredict = async (startYear, endYear, predictYear, region) => {
     setLoading(true);
-    setResult(null);
-    setLogs([]);
-
     try {
-      const res = await axios.post("http://127.0.0.1:8000/ask", { query });
-      setResult(res.data);
-      setLogs(res.data.history || []);
+      // 🔹 Tạo query text để gửi cho BE (BE sẽ tự detect country & years)
+      const query = `Dân số ${region} năm ${startYear} và ${endYear}, từ đó đưa ra tỉ lệ tăng giảm và dự đoán đến năm ${predictYear}`;
+
+      const res = await fetch("http://localhost:8000/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Update stats cho StatsGrid
+        setStats({
+          region: data.country,
+          currentYear: data.year_start,
+          currentPop: data.population_start,
+          endYear: data.year_end,
+          endPop: data.population_end,
+          growthPercent: (data.growth_rate * 100).toFixed(2),
+          predictYear: data.future_year,
+          futurePop: data.predicted_population,
+        });
+
+        // Update prediction cho PredictionResult + Chart
+        setPrediction({
+          year: data.future_year,
+          population: data.predicted_population,
+          year_start: data.year_start,
+          population_start: data.population_start,
+          year_end: data.year_end,
+          population_end: data.population_end,
+        });
+      } else {
+        alert("❌ Lỗi BE: " + data.error);
+      }
     } catch (err) {
-      setResult({ success: false, error: "❌ Lỗi kết nối server." });
+      alert("❌ Lỗi FE gọi API: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
-      <h1 style={{ textAlign: "center" }}>Population Assistant</h1>
-      <QueryForm onSubmit={handleAsk} loading={loading} />
-      <ResultBox result={result} />
-      <LogBox logs={logs} />
+    <div className="container">
+      <Header />
+
+      {stats && <StatsGrid stats={stats} />}
+
+      {prediction && <PopulationChart prediction={prediction} />}
+
+      <Controls onPredict={handlePredict} />
+
+      {loading && <p>⏳ Đang tính toán...</p>}
+
+      <PredictionResult prediction={prediction} />
     </div>
   );
 }
